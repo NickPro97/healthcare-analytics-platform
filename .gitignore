@@ -1,0 +1,38 @@
+# Java / Maven
+target/
+*.class
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+*.env
+application-local.properties
+
+# Logs
+*.log
+logs/
+
+# Python (for later phases)
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Node (for frontend later)
+node_modules/
+build/
+dist/
