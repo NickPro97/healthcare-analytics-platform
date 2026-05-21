@@ -5,6 +5,7 @@ import com.nikhil.patientservice.repository.PatientRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PatientService {
@@ -17,5 +18,32 @@ public class PatientService {
 
     public List<Patient> getAllPatients()   {
         return patientRepository.findAll();
+    }
+
+    public Optional<Patient> getPatientById(Long id) {
+        return patientRepository.findById(id);
+    }
+
+    public Patient createPatient(Patient patient) {
+        return patientRepository.save(patient);
+    }
+
+    public Patient updatePatient(Long id, Patient patientDetails) {
+        Patient existing = patientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Patient not found: " + id));
+
+        existing.setName(patientDetails.getName());
+        existing.setDateOfBirth(patientDetails.getDateOfBirth());
+        existing.setGender(patientDetails.getGender());
+        existing.setMrn(patientDetails.getMrn());
+
+        return patientRepository.save(existing);
+    }
+
+    public void deletePatient(Long id) {
+        if (!patientRepository.existsById(id)) {
+            throw new RuntimeException("Patient not found: " + id);
+        }
+        patientRepository.deleteById(id);
     }
 }
