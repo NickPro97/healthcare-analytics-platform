@@ -1,6 +1,7 @@
 package com.nikhil.patientservice.service;
 
 import com.nikhil.patientservice.entity.Patient;
+import com.nikhil.patientservice.exception.PatientNotFoundException;
 import com.nikhil.patientservice.repository.PatientRepository;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +31,7 @@ public class PatientService {
 
     public Patient updatePatient(Long id, Patient patientDetails) {
         Patient existing = patientRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Patient not found: " + id));
+                .orElseThrow(() -> new PatientNotFoundException(id));
 
         existing.setName(patientDetails.getName());
         existing.setDateOfBirth(patientDetails.getDateOfBirth());
@@ -42,7 +43,7 @@ public class PatientService {
 
     public void deletePatient(Long id) {
         if (!patientRepository.existsById(id)) {
-            throw new RuntimeException("Patient not found: " + id);
+            throw new PatientNotFoundException(id);
         }
         patientRepository.deleteById(id);
     }
