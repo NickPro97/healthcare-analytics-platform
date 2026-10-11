@@ -22,7 +22,9 @@ import java.util.UUID;
 /**
  * Loads the curated clinical reference notes (src/main/resources/knowledge/*.md) into ChromaDB
  * once, at startup. Ids are deterministic, so a re-run does not create duplicates.
- * Failures (no API key, Chroma down) are logged and the service still starts.
+ * ChromaDB must be reachable when the service starts (Spring AI connects while creating the
+ * vector store), so Docker Compose and Kubernetes start Chroma first and restart this service
+ * until it is up. Embedding failures here (for example no OpenAI key) are only logged.
  */
 @Component
 public class KnowledgeBaseLoader {
