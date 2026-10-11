@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: hap
+resources:
+  - namespace.yaml
+  - config.yaml
+  - postgres.yaml
+  - kafka.yaml
+  - redis-chroma.yaml
+  - ml-service.yaml
+  - patient-service.yaml
+  - analytics-service.yaml
+  - notification-service.yaml
+  - ai-assistant-service.yaml
+  - frontend.yaml
+  - hpa.yaml

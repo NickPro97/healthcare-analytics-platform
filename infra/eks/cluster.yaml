@@ -1,0 +1,24 @@
+# Small, short-lived demo cluster. Cost: roughly $0.10/h control plane + 2 x t3.large nodes
+# + EBS + NLB  (about $5-6 per day). ALWAYS run scripts/eks-teardown.sh when finished.
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: hap-demo
+  region: us-east-1
+iam:
+  withOIDC: true
+addons:
+  - name: vpc-cni
+  - name: coredns
+  - name: kube-proxy
+  - name: aws-ebs-csi-driver          # PersistentVolumes for Postgres, Kafka, Chroma
+    wellKnownPolicies:
+      ebsCSIController: true
+  - name: metrics-server              # for the HorizontalPodAutoscaler
+managedNodeGroups:
+  - name: workers
+    instanceType: t3.large
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 3
+    volumeSize: 30

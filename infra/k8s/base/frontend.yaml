@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: frontend }
+  template:
+    metadata:
+      labels: { app: frontend }
+    spec:
+      containers:
+        - name: frontend
+          image: hap/frontend:0.1.0
+          ports: [{ containerPort: 8080 }]
+          env:
+            # nginx does not use resolv.conf search domains, so use kube-dns + fully-qualified names
+            - { name: NGINX_RESOLVER, value: kube-dns.kube-system.svc.cluster.local }
+            - { name: PATIENT_UPSTREAM, value: "http://patient-service.hap.svc.cluster.local:8080" }
+            - { name: ANALYTICS_UPSTREAM, value: "http://analytics-service.hap.svc.cluster.local:8081" }
+            - { name: NOTIFICATION_UPSTREAM, value: "http://notification-service.hap.svc.cluster.local:8082" }
+            - { name: ASSISTANT_UPSTREAM, value: "http://ai-assistant-service.hap.svc.cluster.local:8083" }
+          readinessProbe:
+            httpGet: { path: /, port: 8080 }
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { memory: 128Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector: { app: frontend }
+  ports: [{ port: 80, targetPort: 8080 }]
