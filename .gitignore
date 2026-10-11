@@ -20,19 +20,34 @@ Thumbs.db
 # Env / secrets
 .env
 *.env
+!.env.example
 application-local.properties
 
 # Logs
 *.log
 logs/
 
-# Python (for later phases)
+# Python
 __pycache__/
 *.py[cod]
 venv/
 .venv/
+.pytest_cache/
 
-# Node (for frontend later)
+# Node
 node_modules/
 build/
 dist/
+coverage/
+
+# ---- Clinical data: NEVER commit (MIMIC data and anything derived from it) ----
+data/
+*.csv
+*.csv.gz
+ml-service/models/*.joblib
+ml-service/models/model_card.json
+
+# Terraform / kube
+.terraform/
+*.tfstate*
+kubeconfig*
