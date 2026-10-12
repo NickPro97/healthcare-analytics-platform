@@ -14,7 +14,8 @@ import argparse
 import itertools
 import random
 import time
-from datetime import datetime
+import re
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from pipeline.api import PatientApi, default_credentials
@@ -40,8 +41,21 @@ def deteriorating_series(steps: int = 20, seed: int = 7) -> list[dict]:
     return out
 
 
+# Containers run on UTC; scripts/simulate.sh passes the host's offset (e.g. "-0400") so
+# recordedAt matches the clinician's wall clock, like a real bedside monitor.
+TZ_OFFSET = timedelta(0)
+
+
+def parse_offset(text: str) -> timedelta:
+    m = re.fullmatch(r"([+-])(\d{2}):?(\d{2})", text.strip())
+    if not m:
+        raise ValueError(f"bad UTC offset {text!r}, expected like -0400")
+    sign = -1 if m.group(1) == "-" else 1
+    return sign * timedelta(hours=int(m.group(2)), minutes=int(m.group(3)))
+
+
 def now_iso() -> str:
-    return datetime.now().replace(microsecond=0).isoformat()
+    return (datetime.now(timezone.utc) + TZ_OFFSET).replace(microsecond=0, tzinfo=None).isoformat()
 
 
 def run_scenario(api: PatientApi, interval: float) -> None:
@@ -91,7 +105,11 @@ def main() -> None:
     ap.add_argument("--data", type=Path)
     ap.add_argument("--patients", type=int, default=5)
     ap.add_argument("--interval", type=float, default=2.0, help="seconds between observations")
+    ap.add_argument("--utc-offset", default="+0000", help="local time zone offset, e.g. -0400")
     args = ap.parse_args()
+
+    global TZ_OFFSET
+    TZ_OFFSET = parse_offset(args.utc_offset)
 
     api = PatientApi(args.api)
     api.login(*default_credentials())

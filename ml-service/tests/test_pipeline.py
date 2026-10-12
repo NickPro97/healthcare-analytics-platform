@@ -2,7 +2,9 @@
 import itertools
 
 from pipeline.ingest_mimic import ingest
-from pipeline.simulate_stream import deteriorating_series
+from datetime import timedelta
+
+from pipeline.simulate_stream import deteriorating_series, parse_offset
 
 
 class FakeApi:
@@ -52,3 +54,8 @@ def test_deteriorating_series_gets_worse():
     assert s[-1]["heartRate"] > s[0]["heartRate"] + 40
     assert s[-1]["systolicBp"] < s[0]["systolicBp"] - 30
     assert s[-1]["spo2"] < 93
+
+
+def test_utc_offset_parsing():
+    assert parse_offset("-0400") == timedelta(hours=-4)
+    assert parse_offset("+05:30") == timedelta(hours=5, minutes=30)

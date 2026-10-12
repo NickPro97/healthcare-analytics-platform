@@ -24,11 +24,11 @@ public final class News2Calculator {
         List<String> missing = new ArrayList<>();
         List<String> reasons = new ArrayList<>();
 
-        add("respiratoryRate", respiratoryRate, respiration(respiratoryRate), "Respiratory rate %.0f/min", components, missing, reasons);
-        add("spo2", spo2, spo2Scale1(spo2), "SpO2 %.0f%%", components, missing, reasons);
-        add("systolicBp", systolicBp, systolic(systolicBp), "Systolic BP %.0f mmHg", components, missing, reasons);
-        add("heartRate", heartRate, pulse(heartRate), "Pulse %.0f/min", components, missing, reasons);
-        add("temperatureC", temperatureC, temperature(temperatureC), "Temperature %.1f C", components, missing, reasons);
+        add("respiratoryRate", respiratoryRate, respiration(respiratoryRate), "Respiratory rate %s/min", components, missing, reasons);
+        add("spo2", spo2, spo2Scale1(spo2), "SpO2 %s%%", components, missing, reasons);
+        add("systolicBp", systolicBp, systolic(systolicBp), "Systolic BP %s mmHg", components, missing, reasons);
+        add("heartRate", heartRate, pulse(heartRate), "Pulse %s/min", components, missing, reasons);
+        add("temperatureC", temperatureC, temperature(temperatureC), "Temperature %s C", components, missing, reasons);
 
         int total = components.values().stream().mapToInt(Integer::intValue).sum();
         boolean red = components.values().stream().anyMatch(s -> s == 3);
@@ -54,8 +54,19 @@ public final class News2Calculator {
         }
         components.put(name, points);
         if (points > 0) {
-            reasons.add(String.format(java.util.Locale.ROOT, label, value) + " (+" + points + ")");
+            reasons.add(String.format(java.util.Locale.ROOT, label, display(value)) + " (+" + points + ")");
         }
+    }
+
+    /**
+     * Shows the value exactly as it was scored: "91" for whole numbers, "91.4" otherwise.
+     * (Rounding 91.4 to "91" would make a correct +2 look like a wrong score for 91.)
+     */
+    static String display(double value) {
+        if (value == Math.rint(value)) {
+            return String.valueOf((long) value);
+        }
+        return java.math.BigDecimal.valueOf(value).stripTrailingZeros().toPlainString();
     }
 
     // Each band follows the NEWS2 chart. Values are compared with <= upper bounds so that

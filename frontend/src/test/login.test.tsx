@@ -23,6 +23,18 @@ afterEach(() => {
 });
 
 describe("LoginPage", () => {
+  it("can show and hide the typed password", async () => {
+    renderLogin();
+    const input = screen.getByLabelText("Password");
+    await userEvent.type(input, "secret");
+    expect(input).toHaveAttribute("type", "password");
+    await userEvent.click(screen.getByRole("button", { name: "Show password" }));
+    expect(input).toHaveAttribute("type", "text");
+    expect(input).toHaveValue("secret");
+    await userEvent.click(screen.getByRole("button", { name: "Hide password" }));
+    expect(input).toHaveAttribute("type", "password");
+  });
+
   it("signs in and redirects home", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(JSON.stringify({ token: "t", username: "nikhil", role: "ADMIN", expiresInSeconds: 3600 }), {

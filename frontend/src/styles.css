@@ -194,3 +194,6 @@ input:focus { outline: 2px solid var(--brand); outline-offset: 0; }
 @media (max-width: 760px) {
   .toast { left: 16px; right: 16px; max-width: none; }
 }
+
+.password-row { display: flex; gap: 8px; align-items: center; margin-top: -8px; }
+.password-row .btn { flex-shrink: 0; }

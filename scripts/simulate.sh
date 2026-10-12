@@ -7,4 +7,4 @@ cd "$(dirname "$0")/.."
 set -a; source .env; set +a
 SCENARIO="${1:-mimic}"
 docker compose run --rm -e HAP_USERNAME=nikhil -e HAP_PASSWORD="$APP_ADMIN_PASSWORD" ml-service \
-  python -m pipeline.simulate_stream --api http://patient-service:8080 --scenario "$SCENARIO" --data /data --interval 2
+  python -m pipeline.simulate_stream --api http://patient-service:8080 --scenario "$SCENARIO" --data /data --interval 2 --utc-offset "$(date +%z)"

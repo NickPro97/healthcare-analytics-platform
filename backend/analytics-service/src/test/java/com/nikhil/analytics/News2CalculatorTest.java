@@ -30,6 +30,14 @@ class News2CalculatorTest {
     }
 
     @Test
+    void reasonsShowTheExactValueThatWasScored() {
+        // 91.4 is above 91, so it scores +2; the label must not round it to "91"
+        News2Result r = News2Calculator.score(16.0, 91.4, 125.0, 72.0, 39.25);
+        assertThat(r.reasons()).contains("SpO2 91.4% (+2)", "Temperature 39.25 C (+2)");
+        assertThat(News2Calculator.score(26.0, null, null, null, null).reasons()).containsExactly("Respiratory rate 26/min (+3)");
+    }
+
+    @Test
     void medium() {
         // RR 22 (2) + HR 115 (2) + T 38.5 (1) = 5
         assertThat(News2Calculator.score(22.0, 97.0, 130.0, 115.0, 38.5).level()).isEqualTo(RiskLevel.MEDIUM);
