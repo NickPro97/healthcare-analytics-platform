@@ -13,3 +13,7 @@ data:
   REDIS_HEALTH_ENABLED: "true"
   CHROMA_HOST: http://chroma
   CHROMA_PORT: "8000"
+  AI_PROVIDER: ollama
+  # kind on Docker Desktop can reach Ollama on your Mac through host.docker.internal
+  OLLAMA_BASE_URL: http://host.docker.internal:11434
+  OLLAMA_CHAT_MODEL: llama3.2:3b

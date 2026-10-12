@@ -18,6 +18,9 @@ spec:
             - { name: CHROMA_HOST, valueFrom: { configMapKeyRef: { name: hap-config, key: CHROMA_HOST } } }
             - { name: CHROMA_PORT, valueFrom: { configMapKeyRef: { name: hap-config, key: CHROMA_PORT } } }
             - { name: PATIENT_SERVICE_URL, valueFrom: { configMapKeyRef: { name: hap-config, key: PATIENT_SERVICE_URL } } }
+            - { name: AI_PROVIDER, valueFrom: { configMapKeyRef: { name: hap-config, key: AI_PROVIDER } } }
+            - { name: OLLAMA_BASE_URL, valueFrom: { configMapKeyRef: { name: hap-config, key: OLLAMA_BASE_URL } } }
+            - { name: OLLAMA_CHAT_MODEL, valueFrom: { configMapKeyRef: { name: hap-config, key: OLLAMA_CHAT_MODEL } } }
             - { name: JWT_SECRET, valueFrom: { secretKeyRef: { name: hap-secrets, key: JWT_SECRET } } }
             - { name: OPENAI_API_KEY, valueFrom: { secretKeyRef: { name: hap-secrets, key: OPENAI_API_KEY } } }
             - { name: PORT, value: "8083" }

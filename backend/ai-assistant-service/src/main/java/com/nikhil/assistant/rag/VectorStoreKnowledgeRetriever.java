@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-/** Similarity search in ChromaDB (embeddings from OpenAI) through Spring AI's VectorStore. */
+/** Similarity search in ChromaDB (embeddings from Ollama or OpenAI) through Spring AI's VectorStore. */
 @Component
 public class VectorStoreKnowledgeRetriever implements KnowledgeRetriever {
 

@@ -24,7 +24,7 @@ import java.util.UUID;
  * once, at startup. Ids are deterministic, so a re-run does not create duplicates.
  * ChromaDB must be reachable when the service starts (Spring AI connects while creating the
  * vector store), so Docker Compose and Kubernetes start Chroma first and restart this service
- * until it is up. Embedding failures here (for example no OpenAI key) are only logged.
+ * until it is up. Embedding failures here (for example Ollama not running) are only logged.
  */
 @Component
 public class KnowledgeBaseLoader {
@@ -55,7 +55,7 @@ public class KnowledgeBaseLoader {
             vectorStore.add(docs);
             log.info("Loaded {} knowledge chunks into the vector store", docs.size());
         } catch (Exception e) {
-            log.warn("Knowledge base not loaded ({}). The assistant will answer once OpenAI and Chroma are reachable "
+            log.warn("Knowledge base not loaded ({}). The assistant will answer once the AI provider and Chroma are reachable "
                     + "and the service is restarted.", e.getMessage());
         }
     }

@@ -2,7 +2,7 @@
 
 An event-driven clinical analytics platform. Every new vital sign is streamed through Kafka, scored in real time with the **NEWS2** early-warning score, and turned into alerts that reach the clinician's browser within a second. A Python ML service estimates in-hospital mortality risk with an explanation of each factor. A **Spring AI** assistant answers questions using retrieval-augmented generation (RAG) over curated clinical reference notes and the selected patient's own data.
 
-Built with Java 21, Spring Boot 4, Kafka, PostgreSQL, Redis, Python/FastAPI/scikit-learn, React 18 + TypeScript, Spring AI + OpenAI + ChromaDB, Docker, Kubernetes and AWS EKS. Data: the open **MIMIC-III Clinical Database Demo** (100 de-identified ICU patients).
+Built with Java 21, Spring Boot 4, Kafka, PostgreSQL, Redis, Python/FastAPI/scikit-learn, React 18 + TypeScript, Spring AI + Ollama (local LLM) + ChromaDB, Docker, Kubernetes and AWS EKS. **Runs 100% free on a laptop**: the AI uses a local open model by default, with OpenAI as an optional switch. Data: the open **MIMIC-III Clinical Database Demo** (100 de-identified ICU patients).
 
 > Demonstration project. Not a medical device and not for clinical decisions.
 
@@ -23,7 +23,7 @@ flowchart LR
   AS -->|alerts.created| K
   K --> NS
   AI --> CH[(ChromaDB)]
-  AI -->|chat + embeddings| OA[OpenAI]
+  AI -->|chat + embeddings| OL[Ollama local LLM<br/>or OpenAI]
   AI -->|patient context, caller's JWT| PS
 ```
 
@@ -32,7 +32,7 @@ flowchart LR
 | `backend/patient-service` | Patients, admissions, vital signs; login (JWT, roles); publishes vital-sign events; ML risk endpoint with Redis cache | Spring Boot 4, JPA, Spring Security, Kafka, Redis |
 | `backend/analytics-service` | Consumes vital-sign events, computes NEWS2, raises idempotent alerts, dashboard summary | Spring Boot 4, Kafka, JPA |
 | `backend/notification-service` | Pushes alerts to browsers in real time | Spring MVC Server-Sent Events, Kafka |
-| `backend/ai-assistant-service` | RAG assistant: retrieves reference notes from ChromaDB, adds patient context, answers with citations | Spring AI 2, OpenAI, ChromaDB |
+| `backend/ai-assistant-service` | RAG assistant: retrieves reference notes from ChromaDB, adds patient context, answers with citations | Spring AI 2, Ollama (llama3.2 + nomic-embed-text) or OpenAI, ChromaDB |
 | `ml-service` | Risk model training, serving and explanation; MIMIC ingest and live-stream simulator | FastAPI, scikit-learn, pandas |
 | `frontend` | Dashboard, patients, vitals charts, risk explanation, alerts, assistant chat | React 18, TypeScript, Vite, Recharts |
 | `infra` | Docker Compose, Kubernetes (kustomize), AWS EKS (eksctl) | |
@@ -44,6 +44,7 @@ flowchart LR
 - **Failure isolation.** If Kafka is down, saving a vital sign still succeeds (the publish error is logged). If the ML service is down, the risk endpoint returns `503` with a clear message instead of a stack trace.
 - **One feature pipeline.** Training and serving call the same Python feature code, so there is no training/serving skew.
 - **Explainable model.** Logistic regression, so each factor shown in the UI is the exact contribution (coefficient x standardised value) to the score.
+- **Provider-agnostic AI.** The RAG code depends on Spring AI's `ChatClient` and `VectorStore` interfaces, so switching between a free local model (Ollama) and OpenAI is one setting, not a code change.
 - **Least privilege for the AI.** The assistant fetches patient data with the *caller's own* token, so it can never see more than the user can. Patient names are not sent to the LLM. The prompt requires answers only from the retrieved context, with citations.
 - **Security.** Stateless JWT shared across services (HS256, secret from the environment, minimum 256 bits), role-based delete (ADMIN only), problem+json errors, non-root containers, secrets never in the repo.
 
@@ -71,7 +72,14 @@ scripts/simulate.sh         # stream live vitals -> watch alerts appear at http:
 scripts/simulate.sh deteriorating   # one synthetic patient who becomes septic
 ```
 
-Set `OPENAI_API_KEY` in `.env` to enable the assistant (without it, the rest of the platform works and the assistant returns a clear 503).
+**AI assistant (free):** install [Ollama](https://ollama.com), then pull the two models once:
+
+```bash
+ollama pull llama3.2:3b        # chat model (~2 GB)
+ollama pull nomic-embed-text   # embedding model (~270 MB)
+```
+
+The assistant container talks to Ollama on your machine. To use OpenAI instead, set `AI_PROVIDER=openai` and `OPENAI_API_KEY` in `.env`. Each provider gets its own Chroma collection because their embeddings have different sizes.
 
 | URL | What |
 |---|---|

@@ -18,7 +18,7 @@ public class ErrorHandler {
     public ProblemDetail unavailable(AssistantUnavailableException ex) {
         log.warn("Assistant unavailable: {}", ex.getMessage());
         ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
-                "The AI assistant is not available. Check OPENAI_API_KEY and that ChromaDB is running.");
+                "The AI assistant is not available. Check that Ollama (or your OpenAI key) and ChromaDB are running.");
         pd.setTitle("Assistant unavailable");
         return pd;
     }
