@@ -61,4 +61,8 @@ class PatientApi:
 
 
 def default_credentials() -> tuple[str, str]:
-    return os.environ.get("HAP_USERNAME", "nikhil"), os.environ.get("HAP_PASSWORD", "password123")
+    """Credentials come only from the environment; there is no built-in password."""
+    password = os.environ.get("HAP_PASSWORD")
+    if not password:
+        raise SystemExit("Set HAP_PASSWORD (the APP_ADMIN_PASSWORD from your .env) before running this script.")
+    return os.environ.get("HAP_USERNAME", "nikhil"), password
