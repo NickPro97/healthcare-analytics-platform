@@ -59,3 +59,23 @@ def test_deteriorating_series_gets_worse():
 def test_utc_offset_parsing():
     assert parse_offset("-0400") == timedelta(hours=-4)
     assert parse_offset("+05:30") == timedelta(hours=5, minutes=30)
+
+
+def test_demo_patient_is_admitted_once():
+    from pipeline.simulate_stream import ensure_admission
+
+    class Api:
+        def __init__(self):
+            self.adm = []
+
+        def admissions(self, pid):
+            return self.adm
+
+        def add_admission(self, pid, body):
+            assert body["admissionType"] == "EMERGENCY" and "T" in body["admitTime"]
+            self.adm.append(body)
+
+    api = Api()
+    ensure_admission(api, 1)
+    ensure_admission(api, 1)
+    assert len(api.adm) == 1

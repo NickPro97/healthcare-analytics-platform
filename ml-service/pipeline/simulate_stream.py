@@ -58,9 +58,21 @@ def now_iso() -> str:
     return (datetime.now(timezone.utc) + TZ_OFFSET).replace(microsecond=0, tzinfo=None).isoformat()
 
 
+def ensure_admission(api, patient_id: int) -> None:
+    """Admit the synthetic patient once, so the page shows an age and the risk model has a window."""
+    if not api.admissions(patient_id):
+        api.add_admission(patient_id, {
+            "externalId": "DEMO-ADM-1",
+            "admitTime": now_iso(),
+            "admissionType": "EMERGENCY",
+            "diagnosis": "Suspected sepsis (synthetic demo patient)",
+        })
+
+
 def run_scenario(api: PatientApi, interval: float) -> None:
     patient = api.find_by_mrn(DEMO_MRN) or api.create_patient(
         {"name": "Demo Deteriorating Patient", "mrn": DEMO_MRN, "gender": "F", "dateOfBirth": "1958-03-14"})
+    ensure_admission(api, patient["id"])
     for v in deteriorating_series():
         saved = api.record_vital(patient["id"], {"recordedAt": now_iso(), **v})
         print(f"{patient['mrn']}: {v}  -> vital #{saved['id']}")

@@ -6,6 +6,20 @@ Built with Java 21, Spring Boot 4, Kafka, PostgreSQL, Redis, Python/FastAPI/scik
 
 > Demonstration project. Not a medical device and not for clinical decisions.
 
+## Screenshots
+
+**Live dashboard**: every new vital sign is scored with NEWS2 within a second; alerts stream to the browser.
+
+![Dashboard with live NEWS2 alerts](docs/screenshots/1-dashboard.png)
+
+**Patient view**: vital-sign trends, explainable ML risk score, early-warning alerts and admissions (synthetic demo patient).
+
+![Patient detail page](docs/screenshots/2-patient.png)
+
+| Alerts (acknowledge workflow) | AI assistant (local LLM, cited sources) |
+|---|---|
+| ![Alerts](docs/screenshots/3-alerts.png) | ![AI assistant](docs/screenshots/4-assistant.png) |
+
 ## Architecture
 
 ```mermaid

@@ -9,6 +9,32 @@ import { Empty, ErrorNote, Loading } from "../components/States";
 import { ageAt, formatDateTime, formatNumber } from "../utils/format";
 import { useLiveAlerts } from "../components/Layout";
 import { useEffect } from "react";
+import type { VitalSign } from "../api/types";
+
+type VitalKey = "heartRate" | "systolicBp" | "diastolicBp" | "respiratoryRate" | "spo2" | "temperatureC";
+
+/** Most recent non-empty value of one vital. Real charting is sparse, so each tile has its own time. */
+export function latestOf(vitals: VitalSign[] | null, key: VitalKey): { value: number; at: string } | null {
+  if (!vitals) return null;
+  for (let i = vitals.length - 1; i >= 0; i--) {
+    const v = vitals[i][key];
+    if (v !== null && v !== undefined) return { value: v, at: vitals[i].recordedAt };
+  }
+  return null;
+}
+
+function fmtLatest(latest: { value: number; at: string } | null, digits: number) {
+  return latest ? { text: formatNumber(latest.value, digits), at: latest.at } : { text: "-", at: null as string | null };
+}
+
+/** Systolic and diastolic are only shown together when they were measured at the same time. */
+function bloodPressure(vitals: VitalSign[] | null) {
+  const sys = latestOf(vitals, "systolicBp");
+  if (!sys || !vitals) return { text: "-", at: null as string | null };
+  const sameTime = vitals.find((v) => v.recordedAt === sys.at && v.diastolicBp !== null);
+  const dia = sameTime?.diastolicBp;
+  return { text: dia !== null && dia !== undefined ? `${formatNumber(sys.value)}/${formatNumber(dia)}` : formatNumber(sys.value), at: sys.at };
+}
 
 export function PatientDetailPage() {
   const id = Number(useParams().id);
@@ -32,7 +58,6 @@ export function PatientDetailPage() {
 
   const p = patient.data;
   const latestAdmission = admissions.data?.[0] ?? null;
-  const latest = vitals.data?.[vitals.data.length - 1];
 
   return (
     <div className="page">
@@ -46,19 +71,19 @@ export function PatientDetailPage() {
 
       <section className="grid stats-grid">
         {[
-          ["Heart rate", latest?.heartRate, "/min", 0],
-          ["Blood pressure", latest ? `${formatNumber(latest.systolicBp)}/${formatNumber(latest.diastolicBp)}` : null, "mmHg", 0],
-          ["Resp. rate", latest?.respiratoryRate, "/min", 0],
-          ["SpO2", latest?.spo2, "%", 0],
-          ["Temperature", latest?.temperatureC, "°C", 1],
-        ].map(([label, value, unit, digits]) => (
-          <div className="card stat" key={label as string}>
-            <div className="stat-label">{label as string}</div>
+          { label: "Heart rate", unit: "/min", value: fmtLatest(latestOf(vitals.data, "heartRate"), 0) },
+          { label: "Blood pressure", unit: "mmHg", value: bloodPressure(vitals.data) },
+          { label: "Resp. rate", unit: "/min", value: fmtLatest(latestOf(vitals.data, "respiratoryRate"), 0) },
+          { label: "SpO2", unit: "%", value: fmtLatest(latestOf(vitals.data, "spo2"), 0) },
+          { label: "Temperature", unit: "°C", value: fmtLatest(latestOf(vitals.data, "temperatureC"), 1) },
+        ].map((tile) => (
+          <div className="card stat" key={tile.label}>
+            <div className="stat-label">{tile.label}</div>
             <div className="stat-value">
-              {typeof value === "number" ? formatNumber(value, digits as number) : (value as string | null) ?? "-"}
-              <span className="unit"> {unit as string}</span>
+              {tile.value.text}
+              {tile.value.at && <span className="unit"> {tile.unit}</span>}
             </div>
-            <div className="stat-hint">{latest ? formatDateTime(latest.recordedAt) : "no data"}</div>
+            <div className="stat-hint">{tile.value.at ? formatDateTime(tile.value.at) : "not recorded"}</div>
           </div>
         ))}
       </section>
