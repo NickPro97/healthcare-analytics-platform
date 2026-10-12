@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hap-config
+data:
+  KAFKA_ENABLED: "true"
+  KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  DB_USERNAME: nikhil
+  ML_SERVICE_URL: http://ml-service:8000
+  PATIENT_SERVICE_URL: http://patient-service:8080
+  CACHE_TYPE: redis
+  REDIS_HOST: redis
+  REDIS_HEALTH_ENABLED: "true"
+  CHROMA_HOST: http://chroma
+  CHROMA_PORT: "8000"

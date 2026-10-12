@@ -1,0 +1,18 @@
+# AWS EKS. scripts/eks-deploy.sh sets the ECR registry with:
+#   kustomize edit set image hap/<service>=<account>.dkr.ecr.<region>.amazonaws.com/hap/<service>:<tag>
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+patches:
+  # Public entry point: an AWS Network Load Balancer in front of the nginx gateway.
+  - target: { kind: Service, name: frontend }
+    patch: |-
+      - op: add
+        path: /spec/type
+        value: LoadBalancer
+      - op: add
+        path: /metadata/annotations
+        value:
+          service.beta.kubernetes.io/aws-load-balancer-type: nlb
+          service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing

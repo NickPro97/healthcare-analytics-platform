@@ -1,0 +1,44 @@
+# The trained model is supplied as a ConfigMap (binaryData), created by scripts/k8s-local.sh:
+#   kubectl -n hap create configmap ml-model --from-file=ml-service/models/risk_model.joblib
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: ml-service }
+  template:
+    metadata:
+      labels: { app: ml-service }
+    spec:
+      containers:
+        - name: ml-service
+          image: hap/ml-service:0.1.0
+          ports: [{ containerPort: 8000 }]
+          env:
+            - { name: MODEL_PATH, value: /models/risk_model.joblib }
+          readinessProbe:
+            httpGet: { path: /health, port: 8000 }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: 8000 }
+            periodSeconds: 15
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 512Mi }
+          volumeMounts:
+            - { name: model, mountPath: /models, readOnly: true }
+      volumes:
+        - name: model
+          configMap:
+            name: ml-model
+            optional: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-service
+spec:
+  selector: { app: ml-service }
+  ports: [{ port: 8000 }]

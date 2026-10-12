@@ -1,0 +1,6 @@
+# Local Kubernetes (kind or minikube). Images are built on your machine and loaded into the cluster.
+# Use scripts/k8s-local.sh rather than applying this by hand.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
